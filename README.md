@@ -343,3 +343,17 @@ For any questions or feedback, please reach out to **hr@appdost.in**
 # linked-in-clone
 web based project
 >>>>>>> aae1d43692b60b6cb5fc57220916386cb5dba316
+Here is the screen shorts of the project
+sign.in page
+<img width="1918" height="1020" alt="image" src="https://github.com/user-attachments/assets/dbcd002f-c177-4afe-942c-7727aeaa9850" />
+sing.up page
+<img width="1911" height="1017" alt="image" src="https://github.com/user-attachments/assets/0222702e-7c6f-4e47-98ac-d5a35f2bce92" />
+Main page
+<img width="1915" height="1017" alt="image" src="https://github.com/user-attachments/assets/7d4e6eae-2651-4c0c-86ca-ec7eea858c49" />
+profile page
+<img width="1919" height="1016" alt="image" src="https://github.com/user-attachments/assets/5b0c0556-becf-42e0-b75c-3be78daaaf36" />
+
+
+
+
+
