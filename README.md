@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🚀 LinkedIn Clone - Full Stack Social Media Application
 
 A modern, feature-rich social media platform inspired by LinkedIn, built with the MERN stack (MongoDB, Express, React, Node.js).
@@ -338,3 +339,7 @@ For any questions or feedback, please reach out to **hr@appdost.in**
 ---
 
 ⭐ If you found this project helpful, please consider giving it a star!
+=======
+# linked-in-clone
+web based project
+>>>>>>> aae1d43692b60b6cb5fc57220916386cb5dba316
