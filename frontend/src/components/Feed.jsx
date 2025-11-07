@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import PostCard from './PostCard';
 import { Loader, TrendingUp } from 'lucide-react';
 import axios from 'axios';
+import API_URL from '../config';
 
 const Feed = () => {
   const [posts, setPosts] = useState([]);
@@ -10,7 +11,7 @@ const Feed = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('/api/posts');
+      const response = await axios.get(`${API_URL}/api/posts`);
       if (response.data.success) {
         setPosts(response.data.posts);
       }
