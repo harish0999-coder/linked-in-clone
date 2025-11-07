@@ -1,232 +1,146 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { ThumbsUp, MessageCircle, Trash2, Edit2, Send } from 'lucide-react';
 import axios from 'axios';
 import API_URL from '../config';
 
-const PostCard = ({ post, onPostUpdate, onPostDelete }) => {
-  const { user } = useAuth();
-  const [isEditing, setIsEditing] = useState(false);
-  const [editContent, setEditContent] = useState(post.content);
+const PostCard = ({ post, onUpdated, onDeleted }) => {
+  const [likeLoading, setLikeLoading] = useState(false);
   const [commentText, setCommentText] = useState('');
-  const [showComments, setShowComments] = useState(false);
+  const [commentLoading, setCommentLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [editContent, setEditContent] = useState(post?.content || '');
+  const [err, setErr] = useState('');
 
-  const getInitials = (name) => {
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const formatDate = (date) => {
-    const now = new Date();
-    const postDate = new Date(date);
-    const diffInSeconds = Math.floor((now - postDate) / 1000);
-
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-    
-    return postDate.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric',
-      year: postDate.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-    });
+  const tokenHeader = () => {
+    const token = localStorage.getItem('token');
+    return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
   };
 
   const handleLike = async () => {
+    setLikeLoading(true);
+    setErr('');
     try {
-      const response = await axios.post(`${API_URL}/api/posts/${post._id}/like`);
-      if (response.data.success && onPostUpdate) {
-        onPostUpdate(response.data.post);
-      }
-    } catch (error) {
-      console.error('Like error:', error);
+      const res = await axios.post(`${API_URL}/api/posts/${post._id}/like`, null, tokenHeader());
+      onUpdated && onUpdated(res.data.post);
+    } catch (e) {
+      setErr(e?.response?.data?.message || 'Failed to like');
+    } finally {
+      setLikeLoading(false);
     }
   };
 
   const handleEdit = async () => {
     if (!editContent.trim()) return;
-
+    setErr('');
     try {
-      const response = await axios.put(`${API_URL}/api/posts/${post._id}`, {
-        content: editContent
-      });
-      
-      if (response.data.success && onPostUpdate) {
-        onPostUpdate(response.data.post);
-        setIsEditing(false);
-      }
-    } catch (error) {
-      console.error('Edit error:', error);
+      const res = await axios.put(
+        `${API_URL}/api/posts/${post._id}`,
+        { content: editContent },
+        tokenHeader()
+      );
+      onUpdated && onUpdated(res.data.post);
+      setEditMode(false);
+    } catch (e) {
+      setErr(e?.response?.data?.message || 'Failed to update post');
     }
   };
 
   const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this post?')) return;
-
+    if (!window.confirm('Delete this post?')) return;
+    setErr('');
     try {
-      const response = await axios.delete(`${API_URL}/api/posts/${post._id}`);
-      if (response.data.success && onPostDelete) {
-        onPostDelete(post._id);
-      }
-    } catch (error) {
-      console.error('Delete error:', error);
+      await axios.delete(`${API_URL}/api/posts/${post._id}`, tokenHeader());
+      onDeleted && onDeleted(post._id);
+    } catch (e) {
+      setErr(e?.response?.data?.message || 'Failed to delete post');
     }
   };
 
   const handleComment = async (e) => {
     e.preventDefault();
     if (!commentText.trim()) return;
-
+    setCommentLoading(true);
+    setErr('');
     try {
-      const response = await axios.post(`${API_URL}/api/posts/${post._id}/comment`, {
-        text: commentText
-      });
-      
-      if (response.data.success && onPostUpdate) {
-        onPostUpdate(response.data.post);
-        setCommentText('');
-        setShowComments(true);
-      }
-    } catch (error) {
-      console.error('Comment error:', error);
+      const res = await axios.post(
+        `${API_URL}/api/posts/${post._id}/comment`,
+        { text: commentText },
+        tokenHeader()
+      );
+      onUpdated && onUpdated(res.data.post);
+      setCommentText('');
+    } catch (e) {
+      setErr(e?.response?.data?.message || 'Failed to comment');
+    } finally {
+      setCommentLoading(false);
     }
   };
 
-  const isLiked = post.likes?.includes(user?.id);
-  const isOwner = post.user?._id === user?.id;
+  const createdAt = post?.createdAt ? new Date(post.createdAt) : null;
 
   return (
-    <div className="post-card">
-      <div className="post-header">
-        <div className="post-user-info">
-          <div className="post-avatar">
-            {post.user && getInitials(post.user.name)}
-          </div>
-          <div className="post-details">
-            <span className="post-author">{post.user?.name}</span>
-            <div className="post-meta">
-              {formatDate(post.createdAt)}
-            </div>
-          </div>
+    <div style={{ background: '#fff', padding: 16, borderRadius: 12, boxShadow: '0 2px 8px rgba(0,0,0,0.06)', marginBottom: 16 }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div style={{ width: 44, height: 44, borderRadius: '50%', background: '#e6f0ff', display: 'grid', placeItems: 'center', fontWeight: 700 }}>
+          {post?.author?.name?.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase()}
         </div>
+        <div>
+          <div style={{ fontWeight: 600 }}>{post?.author?.name || 'User'}</div>
+          {createdAt && <div style={{ fontSize: 12, color: '#666' }}>{createdAt.toLocaleString()}</div>}
+        </div>
+      </div>
 
-        {isOwner && (
-          <div className="post-actions-menu">
-            <button 
-              onClick={() => setIsEditing(!isEditing)}
-              className="btn btn-icon btn-secondary"
-              title="Edit post"
-            >
-              <Edit2 size={16} />
-            </button>
-            <button 
-              onClick={handleDelete}
-              className="btn btn-icon btn-secondary"
-              title="Delete post"
-            >
-              <Trash2 size={16} />
-            </button>
-          </div>
+      <div style={{ marginTop: 12 }}>
+        {editMode ? (
+          <>
+            <textarea
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              rows={3}
+              style={{ width: '100%', padding: 10 }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button onClick={handleEdit}>Save</button>
+              <button onClick={() => { setEditMode(false); setEditContent(post.content || ''); }}>Cancel</button>
+            </div>
+          </>
+        ) : (
+          <div style={{ whiteSpace: 'pre-wrap' }}>{post?.content}</div>
         )}
       </div>
 
-      {isEditing ? (
-        <div className="mt-2">
-          <textarea
-            className="form-input w-full"
-            value={editContent}
-            onChange={(e) => setEditContent(e.target.value)}
-            rows={4}
-            maxLength={5000}
+      {err && <div style={{ color: 'crimson', marginTop: 8 }}>{err}</div>}
+
+      <div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+        <button onClick={handleLike} disabled={likeLoading}>
+          {likeLoading ? 'Liking…' : `Like (${post?.likes?.length || 0})`}
+        </button>
+        <button onClick={() => setEditMode(true)}>Edit</button>
+        <button onClick={handleDelete}>Delete</button>
+      </div>
+
+      <div style={{ marginTop: 12 }}>
+        <strong>Comments ({post?.comments?.length || 0})</strong>
+        <form onSubmit={handleComment} style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          <input
+            value={commentText}
+            onChange={(e) => setCommentText(e.target.value)}
+            placeholder="Write a comment…"
+            style={{ flex: 1, padding: 8 }}
+            disabled={commentLoading}
           />
-          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-            <button onClick={handleEdit} className="btn btn-primary">
-              Save Changes
-            </button>
-            <button 
-              onClick={() => {
-                setIsEditing(false);
-                setEditContent(post.content);
-              }}
-              className="btn btn-secondary"
-            >
-              Cancel
-            </button>
-          </div>
+          <button type="submit" disabled={commentLoading || !commentText.trim()}>
+            {commentLoading ? 'Posting…' : 'Comment'}
+          </button>
+        </form>
+        <div style={{ marginTop: 8, display: 'grid', gap: 8 }}>
+          {(post?.comments || []).map((c) => (
+            <div key={c._id} style={{ background: '#f7f7f7', padding: 8, borderRadius: 8 }}>
+              <div style={{ fontWeight: 600, fontSize: 13 }}>{c.author?.name || 'User'}</div>
+              <div style={{ fontSize: 14, whiteSpace: 'pre-wrap' }}>{c.text}</div>
+            </div>
+          ))}
         </div>
-      ) : (
-        <div className="post-content">{post.content}</div>
-      )}
-
-      {post.image && (
-        <img src={post.image} alt="Post" className="post-image" />
-      )}
-
-      <div className="post-stats">
-        <span>{post.likes?.length || 0} likes</span>
-        <span>{post.comments?.length || 0} comments</span>
       </div>
-
-      <div className="post-interactions">
-        <button 
-          onClick={handleLike}
-          className={`interaction-btn ${isLiked ? 'liked' : ''}`}
-        >
-          <ThumbsUp size={20} fill={isLiked ? 'currentColor' : 'none'} />
-          Like
-        </button>
-        <button 
-          onClick={() => setShowComments(!showComments)}
-          className="interaction-btn"
-        >
-          <MessageCircle size={20} />
-          Comment
-        </button>
-      </div>
-
-      {showComments && (
-        <div className="comments-section">
-          <form onSubmit={handleComment} className="comment-form">
-            <input
-              type="text"
-              className="comment-input"
-              placeholder="Add a comment..."
-              value={commentText}
-              onChange={(e) => setCommentText(e.target.value)}
-              maxLength={500}
-            />
-            <button 
-              type="submit" 
-              className="btn btn-primary btn-icon"
-              disabled={!commentText.trim()}
-            >
-              <Send size={16} />
-            </button>
-          </form>
-
-          <div className="comments-list">
-            {post.comments?.map((comment, index) => (
-              <div key={index} className="comment-item">
-                <div className="comment-avatar">
-                  {comment.user && getInitials(comment.user.name)}
-                </div>
-                <div className="comment-content">
-                  <div className="comment-author">{comment.user?.name}</div>
-                  <div className="comment-text">{comment.text}</div>
-                  <div className="comment-time">
-                    {formatDate(comment.createdAt)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
