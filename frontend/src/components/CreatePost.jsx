@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Send, Image, Smile } from 'lucide-react';
 import axios from 'axios';
+import API_URL from '../config';
 
 const CreatePost = ({ onPostCreated }) => {
   const { user } = useAuth();
@@ -30,7 +31,7 @@ const CreatePost = ({ onPostCreated }) => {
     setError('');
 
     try {
-      const response = await axios.post('/api/posts', { content });
+      const response = await axios.post(`${API_URL}/api/posts`, { content });
       
       if (response.data.success) {
         setContent('');
