@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { ThumbsUp, MessageCircle, Trash2, Edit2, Send } from 'lucide-react';
 import axios from 'axios';
+import API_URL from '../config';
 
 const PostCard = ({ post, onPostUpdate, onPostDelete }) => {
   const { user } = useAuth();
@@ -38,7 +39,7 @@ const PostCard = ({ post, onPostUpdate, onPostDelete }) => {
 
   const handleLike = async () => {
     try {
-      const response = await axios.post(`/api/posts/${post._id}/like`);
+      const response = await axios.post(`${API_URL}/api/posts/${post._id}/like`);
       if (response.data.success && onPostUpdate) {
         onPostUpdate(response.data.post);
       }
@@ -51,7 +52,7 @@ const PostCard = ({ post, onPostUpdate, onPostDelete }) => {
     if (!editContent.trim()) return;
 
     try {
-      const response = await axios.put(`/api/posts/${post._id}`, {
+      const response = await axios.put(`${API_URL}/api/posts/${post._id}`, {
         content: editContent
       });
       
@@ -68,7 +69,7 @@ const PostCard = ({ post, onPostUpdate, onPostDelete }) => {
     if (!window.confirm('Are you sure you want to delete this post?')) return;
 
     try {
-      const response = await axios.delete(`/api/posts/${post._id}`);
+      const response = await axios.delete(`${API_URL}/api/posts/${post._id}`);
       if (response.data.success && onPostDelete) {
         onPostDelete(post._id);
       }
@@ -82,7 +83,7 @@ const PostCard = ({ post, onPostUpdate, onPostDelete }) => {
     if (!commentText.trim()) return;
 
     try {
-      const response = await axios.post(`/api/posts/${post._id}/comment`, {
+      const response = await axios.post(`${API_URL}/api/posts/${post._id}/comment`, {
         text: commentText
       });
       
