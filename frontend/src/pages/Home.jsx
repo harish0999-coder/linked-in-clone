@@ -3,6 +3,7 @@ import Navbar from '../components/Navbar';
 import CreatePost from '../components/CreatePost';
 import Feed from '../components/Feed';
 import axios from 'axios';
+import API_URL from '../config';
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
@@ -10,7 +11,7 @@ const Home = () => {
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('/api/posts');
+      const response = await axios.get(`${API_URL}/api/posts`);
       if (response.data.success) {
         setPosts(response.data.posts);
       }
