@@ -5,6 +5,7 @@ import Navbar from '../components/Navbar';
 import PostCard from '../components/PostCard';
 import { Loader, Mail, Calendar, Edit, ArrowLeft } from 'lucide-react';
 import axios from 'axios';
+import API_URL from '../config';
 
 const Profile = () => {
   const { userId } = useParams();
@@ -42,7 +43,7 @@ const Profile = () => {
 
   const fetchUserPosts = async () => {
     try {
-      const response = await axios.get('/api/posts');
+      const response = await axios.get(`${API_URL}/api/posts`);
       if (response.data.success) {
         // Filter posts by current user
         const userPosts = response.data.posts.filter(
