@@ -1,10 +1,17 @@
+// server.js
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
-// Load environment variables
+// Load environment variables from .env
 dotenv.config();
+
+// Verify environment variable exists before connecting
+if (!process.env.MONGO_URI) {
+  console.error('❌ MONGO_URI is not defined in environment variables.');
+  process.exit(1);
+}
 
 // Initialize express app
 const app = express();
@@ -13,12 +20,15 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : 'http://localhost:3000',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin:
+      process.env.NODE_ENV === 'production'
+        ? process.env.FRONTEND_URL
+        : 'http://localhost:3000',
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -28,18 +38,18 @@ app.use('/api/posts', require('./routes/posts'));
 
 // Root route
 app.get('/', (req, res) => {
-  res.json({ 
-    success: true, 
+  res.json({
+    success: true,
     message: 'LinkedIn Clone API is running',
-    version: '1.0.0'
+    version: '1.0.0',
   });
 });
 
 // 404 handler
 app.use('*', (req, res) => {
-  res.status(404).json({ 
-    success: false, 
-    message: 'Route not found' 
+  res.status(404).json({
+    success: false,
+    message: 'Route not found',
   });
 });
 
@@ -48,7 +58,7 @@ app.use((err, req, res, next) => {
   console.error('Error:', err.stack);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal server error'
+    message: err.message || 'Internal server error',
   });
 });
 
