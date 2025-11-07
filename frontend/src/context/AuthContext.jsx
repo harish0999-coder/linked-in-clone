@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import API_URL from '../config';  // Add this line
 
 const AuthContext = createContext();
 
@@ -16,11 +17,10 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  // Configure axios defaults
   useEffect(() => {
     const loadUser = async () => {
       try {
-        const response = await axios.get('/api/auth/me');
+        const response = await axios.get(`${API_URL}/api/auth/me`);  // Add API_URL here
         if (response.data.success) {
           setUser(response.data.user);
         }
@@ -38,13 +38,11 @@ export const AuthProvider = ({ children }) => {
     } else {
       setLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
-  // Login function
   const login = async (email, password) => {
     try {
-      const response = await axios.post('/api/auth/login', {
+      const response = await axios.post(`${API_URL}/api/auth/login`, {  // Add API_URL
         email,
         password
       });
@@ -65,10 +63,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Signup function
   const signup = async (name, email, password) => {
     try {
-      const response = await axios.post('/api/auth/signup', {
+      const response = await axios.post(`${API_URL}/api/auth/signup`, {  // Add API_URL
         name,
         email,
         password
@@ -90,7 +87,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout function
   const logout = () => {
     localStorage.removeItem('token');
     setToken(null);
